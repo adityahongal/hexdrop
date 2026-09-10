@@ -45,6 +45,16 @@ longitude has effectively unbounded cardinality. A hex cell id at a fixed
 resolution is bounded, so counts per cell stay small and cheap. Resolution 8 is
 roughly 0.7 km² per cell; changing the resolution is the scaling knob.
 
+**Where the durability boundary sits.** The bridge is the one place a message
+can be lost. MQTT keeps no log, so anything published while the bridge is down
+exists only if the broker queued it - and the broker only queues for a client
+with a persistent session, subscribed at QoS 1, for messages published at QoS 1.
+GPS is QoS 0, so those pings are dropped during a bridge restart. That is the
+accepted cost of QoS 0 on a metered link: a position that is stale by one second
+is replaced a second later. Anything that must survive a restart is published at
+QoS 1 and consumed by a persistent session. Once a message reaches Kafka it is
+durable and replayable; before that point it is not.
+
 **The aggregator commits offsets manually** and routes unparseable messages to
 `rider-location.dlq`. Kafka has no built-in dead letter queue, and an
 uncommitted offset on a poison message stalls that partition indefinitely.
