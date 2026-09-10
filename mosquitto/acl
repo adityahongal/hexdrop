@@ -1,0 +1,13 @@
+# each rider may only publish under its own namespace
+user rider-001
+topic write fleet/rider-001/#
+
+user rider-002
+topic write fleet/rider-002/#
+
+user rider-003
+topic write fleet/rider-003/#
+
+# the bridge is the only subscriber
+user bridge
+topic read fleet/#
