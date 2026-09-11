@@ -91,10 +91,27 @@ docker compose exec kafka /opt/kafka/bin/kafka-consumer-groups.sh \
 
 ## Tracing
 
-Set `OTEL_ENABLED=1` with an OTLP collector on `localhost:4318`. The bridge
-injects trace context into Kafka message headers, so the producer and the
-consumer appear under one trace id despite being separate processes either side
-of a broker.
+With an OTLP collector on `localhost:4318`:
+
+```bash
+OTEL_ENABLED=1 OTEL_SERVICE_NAME=hexdrop-bridge     npm run bridge:traced
+OTEL_ENABLED=1 OTEL_SERVICE_NAME=hexdrop-aggregator npm run aggregator:traced
+```
+
+The producer and consumer then appear under **one trace id** despite being
+separate processes on either side of Kafka:
+
+```
+hexdrop-bridge      rider-location   SPAN_KIND_PRODUCER   3.85ms  (root)
+hexdrop-aggregator  rider-location   SPAN_KIND_CONSUMER   5.70ms  (child)
+```
+
+**Why the `:traced` scripts exist.** This is an ESM project, and the
+OpenTelemetry auto-instrumentations patch CommonJS `require`. In ESM they hook
+nothing unless the loader is registered first, which `src/hook.mjs` does via
+`node --import`. Without it the SDK starts, the exporter connects and traces
+appear - but only `tcp.connect` and `dns.lookup`. **No Kafka spans at all, and
+no error to tell you why.**
 
 ## Stack
 

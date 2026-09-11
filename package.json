@@ -7,7 +7,10 @@
     "device": "node src/device.js",
     "bridge": "node src/bridge.js",
     "aggregator": "node src/aggregator.js",
-    "api": "node src/api.js"
+    "api": "node src/api.js",
+    "bridge:traced": "node --import ./src/hook.mjs src/bridge.js",
+    "aggregator:traced": "node --import ./src/hook.mjs src/aggregator.js",
+    "api:traced": "node --import ./src/hook.mjs src/api.js"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
